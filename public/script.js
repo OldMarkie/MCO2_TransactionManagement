@@ -89,4 +89,20 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Handle form submission for deleting a movie
+    $('#deleteForm').on('submit', function(event) {
+        event.preventDefault();
+        const id = $('#deleteId').val();
+        $.ajax({
+            url: `/api/movies/${id}`,
+            method: 'DELETE',
+            success: function(response) {
+                alert('Movie deleted successfully!');
+            },
+            error: function(err) {
+                alert('Error deleting movie.');
+            }
+        });
+    });
 });
