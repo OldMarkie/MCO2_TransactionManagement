@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Management</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Movie Management System</h1>
+
+        <form id="insertForm">
+            <h2>Insert New Movie</h2>
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title" required>
+            </div>
+            <div class="form-group">
+                <label for="director">Director Name</label>
+                <input type="text" class="form-control" id="director" required>
+            </div>
+            <div class="form-group">
+                <label for="actor">Actor Name</label>
+                <input type="text" class="form-control" id="actor" required>
+            </div>
+            <div class="form-group">
+                <label for="releaseDate">Release Date</label>
+                <input type="date" class="form-control" id="releaseDate" required>
+            </div>
+            <div class="form-group">
+                <label for="budget">Production Budget</label>
+                <input type="number" class="form-control" id="budget" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="rating">Movie Rating</label>
+                <input type="number" class="form-control" id="rating" step="0.1" min="0" max="10" required>
+            </div>
+            <div class="form-group">
+                <label for="genre">Genre</label>
+                <input type="text" class="form-control" id="genre" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Insert</button>
+        </form>
+
+        <form id="updateForm" class="mt-4">
+            <h2>Update Movie</h2>
+            <div class="form-group">
+                <label for="updateId">Movie ID</label>
+                <input type="number" class="form-control" id="updateId" required>
+            </div>
+            <div class="form-group">
+                <label for="updateTitle">New Title</label>
+                <input type="text" class="form-control" id="updateTitle">
+            </div>
+            <div class="form-group">
+                <label for="updateDirector">New Director Name</label>
+                <input type="text" class="form-control" id="updateDirector">
+            </div>
+            <div class="form-group">
+                <label for="updateActor">New Actor Name</label>
+                <input type="text" class="form-control" id="updateActor">
+            </div>
+            <div class="form-group">
+                <label for="updateReleaseDate">New Release Date</label>
+                <input type="date" class="form-control" id="updateReleaseDate">
+            </div>
+            <div class="form-group">
+                <label for="updateBudget">New Production Budget</label>
+                <input type="number" class="form-control" id="updateBudget" step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="updateRating">New Movie Rating</label>
+                <input type="number" class="form-control" id="updateRating" step="0.1" min="0" max="10">
+            </div>
+            <div class="form-group">
+                <label for="updateGenre">New Genre</label>
+                <input type="text" class="form-control" id="updateGenre">
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+        
+        <form id="searchForm" class="mt-4">
+            <h2>Search Movies</h2>
+            <div class="form-group">
+                <label for="searchTerm">Search Term (Title or Genre)</label>
+                <input type="text" class="form-control" id="searchTerm" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+        
+        <div id="reports" class="mt-4">
+            <h2>Reports</h2>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
