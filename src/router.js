@@ -50,4 +50,19 @@ router.put('/api/movies/:id', async (req, res) => {
     }
 });
 
+// Delete movie
+router.delete('/api/movies/:id', async (req, res) => {
+    const connection = await db.beginTransaction(isolationLevel);
+    try {
+        const { id } = req.params;
+        const deleteQuery = 'DELETE FROM movies WHERE id = ?';
+        await connection.query(deleteQuery, [id]);
+        await db.commitTransaction(connection);
+        res.json({ success: true });
+    } catch (error) {
+        await db.rollbackTransaction(connection);
+        res.status(500).json({ success: false, message: 'An error occurred while deleting the movie' });
+    }
+});
+
 module.exports = router;
