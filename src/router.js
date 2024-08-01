@@ -11,7 +11,7 @@ const isolationLevel = 'READ COMMITTED';
 router.get('/api/movies', async (req, res) => {
     try {
         const searchTerm = req.query.search;
-        const searchQuery = 'SELECT * FROM movies WHERE title LIKE ? OR genre LIKE ?';
+        const searchQuery = 'SELECT * FROM movie WHERE title LIKE ? OR genre LIKE ?';
         const results = await query(searchQuery, [`%${searchTerm}%`, `%${searchTerm}%`]);
         res.json(results);
     } catch (error) {
@@ -24,7 +24,7 @@ router.post('/api/movies', async (req, res) => {
     const connection = await db.beginTransaction(isolationLevel);
     try {
         const { title, director, actor, releaseDate, budget, rating, genre } = req.body;
-        const insertQuery = 'INSERT INTO movies (title, director, actor, release_date, budget, rating, genre) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        const insertQuery = 'INSERT INTO movie (title, director, actor, release_date, budget, rating, genre) VALUES (?, ?, ?, ?, ?, ?, ?)';
         await connection.query(insertQuery, [title, director, actor, releaseDate, budget, rating, genre]);
         await db.commitTransaction(connection);
         res.status(201).json({ success: true });
@@ -40,7 +40,7 @@ router.put('/api/movies/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { title, director, actor, releaseDate, budget, rating, genre } = req.body;
-        const updateQuery = 'UPDATE movies SET title = ?, director = ?, actor = ?, release_date = ?, budget = ?, rating = ?, genre = ? WHERE id = ?';
+        const updateQuery = 'UPDATE movie SET title = ?, director = ?, actor = ?, release_date = ?, budget = ?, rating = ?, genre = ? WHERE id = ?';
         await connection.query(updateQuery, [title, director, actor, releaseDate, budget, rating, genre, id]);
         await db.commitTransaction(connection);
         res.json({ success: true });
@@ -55,7 +55,7 @@ router.delete('/api/movies/:id', async (req, res) => {
     const connection = await db.beginTransaction(isolationLevel);
     try {
         const { id } = req.params;
-        const deleteQuery = 'DELETE FROM movies WHERE id = ?';
+        const deleteQuery = 'DELETE FROM movie WHERE id = ?';
         await connection.query(deleteQuery, [id]);
         await db.commitTransaction(connection);
         res.json({ success: true });

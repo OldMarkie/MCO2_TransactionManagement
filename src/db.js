@@ -4,25 +4,25 @@ const util = require('util');
 // Database configurations for three nodes
 const dbConfigs = [
     {
-        host: 'server1-host',
-        user: 'root',
-        password: '',
-        database: 'movies_db',
-        serverId: 1
+        host: 'ccscloud.dlsu.edu.ph',
+        user: 'username',
+        password: 'password',
+        database: 'Complete',
+        port: 20060
     },
     {
-        host: 'server2-host',
-        user: 'root',
-        password: '',
-        database: 'movies_db',
-        serverId: 2
+        host: 'ccscloud.dlsu.edu.ph',
+        user: 'username',
+        password: 'password',
+        database: 'Be1980',
+        port: 20070
     },
     {
-        host: 'server3-host',
-        user: 'root',
-        password: '',
-        database: 'movies_db',
-        serverId: 3
+        host: 'ccscloud.dlsu.edu.ph',
+        user: 'username',
+        password: 'password',
+        database: 'Af1980',
+        port: 20080
     }
 ];
 
