@@ -8,26 +8,23 @@ def get_db_connection():
         database="Complete",
         port=20060
     )
+    return connection
 
-def execute_query(query, values):
-    connection = get_db_connection()
+def execute_query(query, values=None, connection=None):
     cursor = connection.cursor()
-    cursor.execute(query, values)
-    connection.commit()
-    cursor.close()
-    connection.close()
+    try:
+        if values:
+            cursor.execute(query, values)
+        else:
+            cursor.execute(query)
+        connection.commit()
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        raise
+    finally:
+        cursor.close()
 
-def fetch_all(query, values=None):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(query, values)
-    results = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return results
-
-def fetch_one(query, values=None):
-    connection = get_db_connection()
+def fetch_one(query, values=None, connection=None):
     cursor = connection.cursor(dictionary=True)
     try:
         if values:
@@ -40,5 +37,4 @@ def fetch_one(query, values=None):
         raise
     finally:
         cursor.close()
-        connection.close()
     return result
