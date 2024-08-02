@@ -5,20 +5,12 @@ from db import get_db_connection, execute_query, fetch_one
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Ensure you have a secret key for flash messages
 
-def set_isolation_level(connection, level):
-    cursor = connection.cursor()
-    cursor.execute(f"SET SESSION TRANSACTION ISOLATION LEVEL {level}")
-    cursor.close()
-
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/insert', methods=['POST'])
 def insert_movie():
-    connection = get_db_connection()
-    set_isolation_level(connection, 'REPEATABLE READ')
-    
     movie_id = request.form['movie_id']
     title = request.form['title']
     director_name = request.form['director_name']
@@ -34,24 +26,19 @@ def insert_movie():
     values = (movie_id, title, director_name, actor_name, release_date, production_budget, movie_rating, genre)
     
     try:
-        execute_query(query, values, connection)
+        execute_query(query, values)
         flash('Movie added successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
-    finally:
-        connection.close()
     
     return redirect(url_for('index'))
 
 @app.route('/search', methods=['GET'])
 def search_movie():
-    connection = get_db_connection()
-    set_isolation_level(connection, 'READ COMMITTED')
-    
     movie_id = request.args.get('search_id')
     
     query = "SELECT * FROM movie WHERE MovieID = %s"
-    movie = fetch_one(query, (movie_id,), connection)
+    movie = fetch_one(query, (movie_id,))
     
     if movie:
         return render_template('index.html', movie=movie)
@@ -61,9 +48,6 @@ def search_movie():
 
 @app.route('/update', methods=['POST'])
 def update_movie():
-    connection = get_db_connection()
-    set_isolation_level(connection, 'REPEATABLE READ')
-    
     movie_id = request.form['movie_id']
     title = request.form['title']
     director_name = request.form['director_name']
@@ -80,31 +64,24 @@ def update_movie():
     values = (title, director_name, actor_name, release_date, production_budget, movie_rating, genre, movie_id)
     
     try:
-        execute_query(query, values, connection)
+        execute_query(query, values)
         flash('Movie updated successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
-    finally:
-        connection.close()
     
     return redirect(url_for('index'))
 
 @app.route('/delete', methods=['POST'])
 def delete_movie():
-    connection = get_db_connection()
-    set_isolation_level(connection, 'REPEATABLE READ')
-    
     movie_id = request.form['delete_id']
     
     query = "DELETE FROM movie WHERE MovieID = %s"
     
     try:
-        execute_query(query, (movie_id,), connection)
+        execute_query(query, (movie_id,))
         flash('Movie deleted successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
-    finally:
-        connection.close()
     
     return redirect(url_for('index'))
 
