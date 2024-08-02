@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import mysql.connector
-from db import get_db_connection, execute_query, fetch_one
+from db import get_db_connection, execute_query, fetch_one, fetch_all
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Ensure you have a secret key for flash messages
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    movies = fetch_all("SELECT * FROM movie")
+    return render_template('index.html', movies=movies)
 
 @app.route('/insert', methods=['POST'])
 def insert_movie():
@@ -26,7 +27,11 @@ def insert_movie():
     values = (movie_id, title, director_name, actor_name, release_date, production_budget, movie_rating, genre)
     
     try:
-        execute_query(query, values)
+        execute_query(query, values, session['db_config'])
+        
+        if session.get('secondary_db_config'):
+            execute_query(query, values, session['secondary_db_config'])
+        
         flash('Movie added successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
@@ -64,7 +69,11 @@ def update_movie():
     values = (title, director_name, actor_name, release_date, production_budget, movie_rating, genre, movie_id)
     
     try:
-        execute_query(query, values)
+        execute_query(query, values, session['db_config'])
+        
+        if session.get('secondary_db_config'):
+            execute_query(query, values, session['secondary_db_config'])
+        
         flash('Movie updated successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
@@ -78,12 +87,67 @@ def delete_movie():
     query = "DELETE FROM movie WHERE MovieID = %s"
     
     try:
-        execute_query(query, (movie_id,))
+        execute_query(query, (movie_id,), session['db_config'])
+        
+        if session.get('secondary_db_config'):
+            execute_query(query, (movie_id,), session['secondary_db_config'])
+        
         flash('Movie deleted successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
     
     return redirect(url_for('index'))
+
+@app.route('/switch_node', methods=['POST'])
+def switch_node():
+    node = request.form['node']
+    
+    if node == 'Complete':
+        session['db_config'] = {
+            'host': "ccscloud.dlsu.edu.ph",
+            'user': "username",
+            'password': "password",
+            'database': "Complete",
+            'port': 20060
+        }
+        session['secondary_db_config'] = None  # No secondary node
+    elif node == 'Be1980':
+        session['db_config'] = {
+            'host': "ccscloud.dlsu.edu.ph",
+            'user': "username",
+            'password': "password",
+            'database': "Be1980",
+            'port': 20070
+        }
+        session['secondary_db_config'] = {
+            'host': "ccscloud.dlsu.edu.ph",
+            'user': "username",
+            'password': "password",
+            'database': "Complete",
+            'port': 20060
+        }
+    elif node == 'Af1980':
+        session['db_config'] = {
+            'host': "ccscloud.dlsu.edu.ph",
+            'user': "username",
+            'password': "password",
+            'database': "Af1980",
+            'port': 20080
+        }
+        session['secondary_db_config'] = {
+            'host': "ccscloud.dlsu.edu.ph",
+            'user': "username",
+            'password': "password",
+            'database': "Complete",
+            'port': 20060
+        }
+    
+    flash(f'Switched to {node} database.', 'success')
+    return redirect(url_for('index'))
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

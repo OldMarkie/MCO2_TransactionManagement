@@ -1,21 +1,38 @@
 import mysql.connector
+from flask import session
 
 def get_db_connection():
+    db_config = session.get('db_config', {
+        'host': "ccscloud.dlsu.edu.ph",
+        'user': "username",
+        'password': "password",
+        'database': "Complete",
+        'port': 20060
+    })
+    
     return mysql.connector.connect(
-        host="ccscloud.dlsu.edu.ph",
-        user="username",
-        password="password",
-        database="Complete",
-        port=20060
+        host=db_config['host'],
+        user=db_config['user'],
+        password=db_config['password'],
+        database=db_config['database'],
+        port=db_config['port']
     )
 
-def execute_query(query, values):
-    connection = get_db_connection()
+def execute_query(query, values, db_config):
+    connection = mysql.connector.connect(
+        host=db_config['host'],
+        user=db_config['user'],
+        password=db_config['password'],
+        database=db_config['database'],
+        port=db_config['port']
+    )
+    
     cursor = connection.cursor()
     cursor.execute(query, values)
     connection.commit()
     cursor.close()
     connection.close()
+
 
 def fetch_all(query, values=None):
     conn = get_db_connection()
@@ -30,10 +47,7 @@ def fetch_one(query, values=None):
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
     try:
-        if values:
-            cursor.execute(query, values)
-        else:
-            cursor.execute(query)
+        cursor.execute(query, values) if values else cursor.execute(query)
         result = cursor.fetchone()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
