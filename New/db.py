@@ -56,3 +56,17 @@ def fetch_one(query, values=None):
         cursor.close()
         connection.close()
     return result
+
+def is_central_node_up():
+    try:
+        connection = mysql.connector.connect(
+            host="ccscloud.dlsu.edu.ph",
+            user="username",
+            password="password",
+            database="Complete",
+            port=20060
+        )
+        connection.close()
+        return True
+    except mysql.connector.Error:
+        return False
