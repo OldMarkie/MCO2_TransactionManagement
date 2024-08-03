@@ -1,12 +1,40 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import mysql.connector
-from db import get_db_connection, execute_query, fetch_one, fetch_all
+from db import get_db_connection, execute_query, fetch_one, fetch_all, is_central_node_up
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Ensure you have a secret key for flash messages
 
+def set_db_config_with_failover(release_date=None):
+    if is_central_node_up():
+        session['db_config'] = {
+            'host': "ccscloud.dlsu.edu.ph",
+            'user': "username",
+            'password': "password",
+            'database': "Complete",
+            'port': 20060
+        }
+    else:
+        if release_date and release_date < '1980-01-01':
+            session['db_config'] = {
+                'host': "ccscloud.dlsu.edu.ph",
+                'user': "username",
+                'password': "password",
+                'database': "Be1980",
+                'port': 20070
+            }
+        else:
+            session['db_config'] = {
+                'host': "ccscloud.dlsu.edu.ph",
+                'user': "username",
+                'password': "password",
+                'database': "Af1980",
+                'port': 20080
+            }
+
 @app.route('/')
 def index():
+    set_db_config_with_failover()
     movies = fetch_all("SELECT * FROM movie")
     return render_template('index.html', movies=movies)
 
@@ -27,11 +55,8 @@ def insert_movie():
     values = (movie_id, title, director_name, actor_name, release_date, production_budget, movie_rating, genre)
     
     try:
+        set_db_config_with_failover(release_date)
         execute_query(query, values, session['db_config'])
-        
-        if session.get('secondary_db_config'):
-            execute_query(query, values, session['secondary_db_config'])
-        
         flash('Movie added successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
@@ -43,6 +68,7 @@ def search_movie():
     movie_id = request.args.get('search_id')
     
     query = "SELECT * FROM movie WHERE MovieID = %s"
+    set_db_config_with_failover()
     movie = fetch_one(query, (movie_id,))
     
     if movie:
@@ -69,11 +95,8 @@ def update_movie():
     values = (title, director_name, actor_name, release_date, production_budget, movie_rating, genre, movie_id)
     
     try:
+        set_db_config_with_failover(release_date)
         execute_query(query, values, session['db_config'])
-        
-        if session.get('secondary_db_config'):
-            execute_query(query, values, session['secondary_db_config'])
-        
         flash('Movie updated successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
@@ -87,11 +110,15 @@ def delete_movie():
     query = "DELETE FROM movie WHERE MovieID = %s"
     
     try:
+        movie = fetch_one("SELECT * FROM movie WHERE MovieID = %s", (movie_id,))
+        if not movie:
+            flash('Movie not found!', 'danger')
+            return redirect(url_for('index'))
+
+        release_date = movie['ReleaseDate']
+        set_db_config_with_failover(release_date)
+
         execute_query(query, (movie_id,), session['db_config'])
-        
-        if session.get('secondary_db_config'):
-            execute_query(query, (movie_id,), session['secondary_db_config'])
-        
         flash('Movie deleted successfully!', 'success')
     except Exception as e:
         flash('An error occurred: {}'.format(str(e)), 'danger')
@@ -110,7 +137,6 @@ def switch_node():
             'database': "Complete",
             'port': 20060
         }
-        session['secondary_db_config'] = None  # No secondary node
     elif node == 'Be1980':
         session['db_config'] = {
             'host': "ccscloud.dlsu.edu.ph",
@@ -118,13 +144,6 @@ def switch_node():
             'password': "password",
             'database': "Be1980",
             'port': 20070
-        }
-        session['secondary_db_config'] = {
-            'host': "ccscloud.dlsu.edu.ph",
-            'user': "username",
-            'password': "password",
-            'database': "Complete",
-            'port': 20060
         }
     elif node == 'Af1980':
         session['db_config'] = {
@@ -134,20 +153,9 @@ def switch_node():
             'database': "Af1980",
             'port': 20080
         }
-        session['secondary_db_config'] = {
-            'host': "ccscloud.dlsu.edu.ph",
-            'user': "username",
-            'password': "password",
-            'database': "Complete",
-            'port': 20060
-        }
     
     flash(f'Switched to {node} database.', 'success')
     return redirect(url_for('index'))
-
-
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
